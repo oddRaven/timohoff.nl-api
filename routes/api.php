@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\WaypointController;
+use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\SectionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +22,14 @@ use App\Http\Controllers\WaypointController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('authentication', [AuthenticationController::class, 'login']);
+Route::delete('authentication', [AuthenticationController::class, 'logout']);
+
+Route::get('section', [SectionController::class, 'index']);
+Route::middleware('auth')->post('section', [SectionController::class, 'store']);
+Route::middleware('auth')->put('section/{id}', [SectionController::class, 'update']);
+Route::middleware('auth')->delete('section/{id}', [SectionController::class, 'delete']);
 
 Route::get('timeline/{id}', [TimelineController::class, 'find']);
 
