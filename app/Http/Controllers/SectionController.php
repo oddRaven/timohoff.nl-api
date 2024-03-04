@@ -23,7 +23,8 @@ class SectionController extends Controller
         $section->save();
 
         $response = [
-            "message" => "Section created."
+            "message" => "Section created.",
+            "section" => $section
         ];
 
         return response()->json($response, 201);
@@ -36,7 +37,12 @@ class SectionController extends Controller
         $section->order = $request->order;
         $section->save();
 
-        return response()->json($section);
+        $response = [
+            "message" => "Section updated.",
+            "section" => $section
+        ];
+
+        return response()->json($response);
     }
 
     public function delete(Request $request, $id)
@@ -44,6 +50,10 @@ class SectionController extends Controller
         $section = Section::find($id); 
         $section->delete();
 
-        return response()->json($section);
+        $response = [
+            "message" => "Section deleted."
+        ];
+
+        return response()->json($response, 200);
     }
 }
