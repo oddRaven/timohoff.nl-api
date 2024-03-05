@@ -21,26 +21,26 @@ class WaypointController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $waypoint = DB::table('waypoint')
-            ->join('language_translation AS translation', function (JoinClause $join) use ($language_code) {
-                $join->on('waypoint.title_translation_id', '=', 'translation.translation_id')
+        $waypoint = DB::table('waypoints')
+            ->join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
+                $join->on('waypoints.title_translation_id', '=', 'translation.translation_id')
                     ->where('translation.language_code', '=', $language_code);
             })
-            ->select('waypoint.*', 'translation.text AS title')
-            ->where('waypoint.id', $id)
+            ->select('waypoints.*', 'translation.text AS title')
+            ->where('waypoints.id', $id)
             ->first();
 
-        $waypoint->article = DB::table('article')
-            ->join('language_translation AS titleTranslation', function (JoinClause $join) use ($language_code) {
-                $join->on('article.title_translation_id', '=', 'titleTranslation.translation_id')
+        $waypoint->article = DB::table('articles')
+            ->join('language_translations AS titleTranslation', function (JoinClause $join) use ($language_code) {
+                $join->on('articles.title_translation_id', '=', 'titleTranslation.translation_id')
                     ->where('titleTranslation.language_code', '=', $language_code);
             })
-            ->join('language_translation AS textTranslation', function (JoinClause $join) use ($language_code) {
-                $join->on('article.text_translation_id', '=', 'textTranslation.translation_id')
+            ->join('language_translations AS textTranslation', function (JoinClause $join) use ($language_code) {
+                $join->on('articles.text_translation_id', '=', 'textTranslation.translation_id')
                     ->where('textTranslation.language_code', '=', $language_code);
             })
-            ->select('article.id', 'titleTranslation.text AS title', 'textTranslation.text AS text')
-            ->where('article.id', $waypoint->article_id)
+            ->select('articles.id', 'titleTranslation.text AS title', 'textTranslation.text AS text')
+            ->where('articles.id', $waypoint->article_id)
             ->first();
 
         return response()->json($waypoint);

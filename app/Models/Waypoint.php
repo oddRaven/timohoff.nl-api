@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Waypoint extends Model
 {
     use HasFactory;
-    protected $table = 'waypoint';
+    protected $table = 'waypoints:';
     protected $fillable = ['title', 'image_source', 'is_bound'];
 }

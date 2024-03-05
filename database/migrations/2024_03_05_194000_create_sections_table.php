@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->timestamps();
 
-            $table->foreign('title_translation_id')->references('id')->on('translation');
+            $table->foreign('title_translation_id')->references('id')->on('translations');
         });
     }
 

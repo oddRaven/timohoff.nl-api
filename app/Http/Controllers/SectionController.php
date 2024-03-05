@@ -17,7 +17,7 @@ class SectionController extends Controller
         $language_code = $request->header('Content-Language', 'nl');
 
         $sections = DB::table('sections')
-            ->join('language_translation AS translation', function (JoinClause $join) use ($language_code) {
+            ->join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
                 $join->on('sections.title_translation_id', '=', 'translation.translation_id')
                     ->where('translation.language_code', '=', $language_code);
             })
@@ -32,7 +32,7 @@ class SectionController extends Controller
         $section = Section::find($id);
 
         $section->title_translations = DB::table('sections')
-            ->join('language_translation AS translation', function (JoinClause $join) {
+            ->join('language_translations AS translation', function (JoinClause $join) {
                 $join->on('sections.title_translation_id', '=', 'translation.translation_id');
             })
             ->select('translation.language_code AS code', 'translation.text AS text')

@@ -12,26 +12,26 @@ class TimelineController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $timeline = DB::table('timeline')
+        $timeline = DB::table('timelines')
             ->find($id);
 
-        $timeline->phases = DB::table('phase')
-            ->join('language_translation AS translation', function (JoinClause $join) use ($language_code) {
-                $join->on('phase.title_translation_id', '=', 'translation.translation_id')
+        $timeline->phases = DB::table('phases')
+            ->join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
+                $join->on('phases.title_translation_id', '=', 'translation.translation_id')
                     ->where('translation.language_code', '=', $language_code);
             })
-            ->select('phase.id', 'phase.timeline_id', 'phase.color', 'translation.text AS title')
-            ->where('phase.timeline_id', $id)
+            ->select('phases.id', 'phases.timeline_id', 'phases.color', 'translation.text AS title')
+            ->where('phases.timeline_id', $id)
             ->get();
 
         foreach($timeline->phases as $phase){
-            $phase->waypoints = DB::table('waypoint')
+            $phase->waypoints = DB::table('waypoints')
                 ->join('language_translation AS translation', function (JoinClause $join) use ($language_code) {
-                    $join->on('waypoint.title_translation_id', '=', 'translation.translation_id')
+                    $join->on('waypoints.title_translation_id', '=', 'translation.translation_id')
                         ->where('translation.language_code', '=', $language_code);
                 })
-                ->select('waypoint.*', 'translation.text AS title')
-                ->where('waypoint.phase_id', $phase->id)
+                ->select('waypoints.*', 'translation.text AS title')
+                ->where('waypoints.phase_id', $phase->id)
                 ->get();
 
             foreach($phase->waypoints as $waypoint){
