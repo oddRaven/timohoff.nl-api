@@ -27,6 +27,7 @@ Route::post('authentication', [AuthenticationController::class, 'login']);
 Route::delete('authentication', [AuthenticationController::class, 'logout']);
 
 Route::get('section', [SectionController::class, 'index']);
+Route::get('section/{id}', [SectionController::class, 'find']);
 Route::middleware('auth')->post('section', [SectionController::class, 'store']);
 Route::middleware('auth')->put('section/{id}', [SectionController::class, 'update']);
 Route::middleware('auth')->delete('section/{id}', [SectionController::class, 'delete']);

@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Section extends Model
+class Translation extends Model
 {
     use HasFactory;
-    protected $table = 'sections';
-    protected $fillable = ['title', 'order'];
+    protected $table = 'translation';
+    protected $fillable = ['title'];
 }

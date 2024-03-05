@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('sections', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->unsignedBigInteger('title_translation_id');
             $table->integer('order')->default(0);
             $table->timestamps();
+
+            $table->foreign('title_translation_id')->references('id')->on('translation');
         });
     }
 
@@ -24,6 +26,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('sections', function (Blueprint $table) {
+            $table->dropForeign(['title_translation_id']);
+        });
+
         Schema::dropIfExists('sections');
     }
 };
