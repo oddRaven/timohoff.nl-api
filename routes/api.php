@@ -7,6 +7,7 @@ use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\WaypointController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\SectionController;
+use App\Http\Controllers\SectionItemController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,12 @@ Route::get('section/{id}', [SectionController::class, 'find']);
 Route::middleware('auth')->post('section', [SectionController::class, 'store']);
 Route::middleware('auth')->put('section/{id}', [SectionController::class, 'update']);
 Route::middleware('auth')->delete('section/{id}', [SectionController::class, 'delete']);
+
+Route::get('section-item', [SectionItemController::class, 'index']);
+Route::get('section-item/{type}/{id}', [SectionItemController::class, 'find']);
+Route::middleware('auth')->post('section-item', [SectionItemController::class, 'store']);
+Route::middleware('auth')->put('section-item/{type}/{id}', [SectionItemController::class, 'update']);
+Route::middleware('auth')->delete('section-item/{type}/{id}', [SectionItemController::class, 'delete']);
 
 Route::get('timeline/{id}', [TimelineController::class, 'find']);
 
