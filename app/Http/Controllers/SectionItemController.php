@@ -6,6 +6,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\Article;
 use App\Models\SectionItem;
 use App\Models\LanguageTranslation;
 use App\Models\Translation;
@@ -111,6 +112,10 @@ class SectionItemController extends Controller
     {
         $section_item = SectionItem::where('item_id', '=', $id, 'and')->where('item_type', '=', $type); 
         $section_item->delete();
+
+        if ($type == 'Articles') {
+            Article::destroy($id);
+        }
 
         $response = [
             "message" => "Section item deleted."

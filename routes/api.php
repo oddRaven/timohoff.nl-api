@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\WaypointController;
 use App\Http\Controllers\AuthenticationController;
@@ -26,6 +27,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('authentication', [AuthenticationController::class, 'login']);
 Route::delete('authentication', [AuthenticationController::class, 'logout']);
+
+Route::get('article', [ArticleController::class, 'index']);
+Route::get('article/{id}', [ArticleController::class, 'find']);
+Route::middleware('auth')->post('article', [ArticleController::class, 'store']);
+Route::middleware('auth')->put('article/{id}', [ArticleController::class, 'update']);
+Route::middleware('auth')->delete('article/{id}', [ArticleController::class, 'delete']);
 
 Route::get('section', [SectionController::class, 'index']);
 Route::get('section/{id}', [SectionController::class, 'find']);
