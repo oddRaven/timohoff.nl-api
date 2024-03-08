@@ -9,5 +9,5 @@ class LanguageTranslation extends Model
 {
     use HasFactory;
     protected $table = 'language_translations';
-    protected $fillable = ['transation_id', 'language_code', 'text'];
+    protected $fillable = ['translation_id', 'language_code', 'text'];
 }

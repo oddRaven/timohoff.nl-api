@@ -35,7 +35,7 @@ class SectionController extends Controller
             ->join('language_translations AS translation', function (JoinClause $join) {
                 $join->on('sections.title_translation_id', '=', 'translation.translation_id');
             })
-            ->select('translation.language_code AS code', 'translation.text AS text')
+            ->select('translation.*')
             ->where('sections.id', $id)
             ->get();
 
@@ -51,7 +51,7 @@ class SectionController extends Controller
         foreach ($request->title_translations as $title_translation) {
             $language_translation = new LanguageTranslation;
             $language_translation->translation_id = $translation->id;
-            $language_translation->language_code = $title_translation['code'];
+            $language_translation->language_code = $title_translation['language_code'];
             $language_translation->text = $title_translation['text'];
             $language_translation->save();
         }
@@ -75,11 +75,11 @@ class SectionController extends Controller
         $section->order = $request->order;
         $section->save();
 
-        foreach ($title_translation as $request->title_translations) {
-            $language_translation = new LanguageTranslation;
-            $language_translation->language_code = $title_translation->code;
-            $language_translation->text = $title_translation->text;
-            $language_translation->save();
+        foreach ($request->title_translations as $title_translation) {
+            $language_translation = DB::table('language_translations')
+                ->where('translation_id', '=', $request->title_translation_id)
+                ->where('language_code', '=', $title_translation['language_code'])
+                ->update(['text' => $title_translation['text']]);
         }
 
         $response = [
@@ -92,13 +92,12 @@ class SectionController extends Controller
 
     public function delete (Request $request, $id)
     {
-        $section = Section::find($id); 
-        $section->delete();
+        Section::destroy($id);
 
         $response = [
             "message" => "Section deleted."
         ];
 
-        return response()->json($response, 200);
+        return response()->json($response);
     }
 }

@@ -50,7 +50,7 @@ class ProfileCollectionController extends Controller
         foreach ($request->title_translations as $title_translation) {
             $language_translation = new LanguageTranslation;
             $language_translation->translation_id = $translation->id;
-            $language_translation->language_code = $title_translation['code'];
+            $language_translation->language_code = $title_translation['language_code'];
             $language_translation->text = $title_translation['text'];
             $language_translation->save();
         }
@@ -119,11 +119,11 @@ class ProfileCollectionController extends Controller
         $profile_collection = ProfileCollection::find($id); 
         $profile_collection->save();
 
-        foreach ($title_translation as $request->title_translations) {
-            $language_translation = new LanguageTranslation;
-            $language_translation->language_code = $title_translation->code;
-            $language_translation->text = $title_translation->text;
-            $language_translation->save();
+        foreach ($request->title_translations as $title_translation) {
+            $language_translation = DB::table('language_translations')
+                ->where('translation_id', '=', $request->title_translation_id)
+                ->where('language_code', '=', $title_translation['language_code'])
+                ->update(['text' => $title_translation['text']]);
         }
 
         $response = [
@@ -140,5 +140,11 @@ class ProfileCollectionController extends Controller
     public function destroy(string $id)
     {
         ProfileCollection::destroy($id);
+
+        $response = [
+            "message" => "Profile collection deleted."
+        ];
+
+        return response()->json($response);
     }
 }

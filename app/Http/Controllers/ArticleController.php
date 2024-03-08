@@ -80,7 +80,7 @@ class ArticleController extends Controller
         foreach ($subject_translations as $subject_translation) {
             $language_translation = new LanguageTranslation;
             $language_translation->translation_id = $translation->id;
-            $language_translation->language_code = $subject_translation['code'];
+            $language_translation->language_code = $subject_translation['language_code'];
             $language_translation->text = $subject_translation['text'];
             $language_translation->save();
         }
@@ -93,8 +93,8 @@ class ArticleController extends Controller
         $article = Article::find($id); 
         $article->save();
 
-        $this->update_translations($request->title_translations);
-        $this->update_translations($request->text_translations);
+        $this->update_translations($request->title_translation_id, $request->title_translations);
+        $this->update_translations($request->text_translation_id, $request->text_translations);
 
         $response = [
             "message" => "Article updated.",
@@ -104,13 +104,13 @@ class ArticleController extends Controller
         return response()->json($response);
     }
 
-    private function update_translations($translations)
+    private function update_translations($translation_id, $translations)
     {
-        foreach ($translations as $translation) {
-            $language_translation = LanguageTranslation::find($translation->id);
-            $language_translation->language_code = $translation->code;
-            $language_translation->text = $translation->text;
-            $language_translation->save();
+        foreach ($request->translations as $translation) {
+            $language_translation = DB::table('language_translations')
+                ->where('translation_id', '=', $translation_id)
+                ->where('language_code', '=', $translation['language_code'])
+                ->update(['text' => $translation['text']]);
         }
     }
 
@@ -122,6 +122,6 @@ class ArticleController extends Controller
             "message" => "Article deleted."
         ];
 
-        return response()->json($response, 200);
+        return response()->json($response);
     }
 }

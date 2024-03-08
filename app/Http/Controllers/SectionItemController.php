@@ -50,7 +50,7 @@ class SectionItemController extends Controller
             ->join('language_translations AS translation', function (JoinClause $join) {
                 $join->on('section_items.title_translation_id', '=', 'translation.translation_id');
             })
-            ->select('translation.language_code AS code', 'translation.text AS text')
+            ->select('translation.*')
             ->where(['section_items.item_id' => $id, 'section_items.item_type' => $type])
             ->get();
 
@@ -66,7 +66,7 @@ class SectionItemController extends Controller
         foreach ($request->title_translations as $title_translation) {
             $language_translation = new LanguageTranslation;
             $language_translation->translation_id = $translation->id;
-            $language_translation->language_code = $title_translation['code'];
+            $language_translation->language_code = $title_translation['language_code'];
             $language_translation->text = $title_translation['text'];
             $language_translation->save();
         }
@@ -89,15 +89,15 @@ class SectionItemController extends Controller
 
     public function update (Request $request, $type, $id)
     {
-        $section_item = SectionItem::where('item_id', '=', $id, 'and')->where('item_type', '=', $type); 
-        $section_item->order = $request->order;
-        $section_item->save();
+        $section_item = SectionItem::where('item_id', '=', $id, 'and')
+            ->where('item_type', '=', $type)
+            ->update(['order' => $request->order]);
 
-        foreach ($title_translation as $request->title_translations) {
-            $language_translation = new LanguageTranslation;
-            $language_translation->language_code = $title_translation->code;
-            $language_translation->text = $title_translation->text;
-            $language_translation->save();
+        foreach ($request->title_translations as $title_translation) {
+            $language_translation = DB::table('language_translations')
+                ->where('translation_id', '=', $request->title_translation_id)
+                ->where('language_code', '=', $title_translation['language_code'])
+                ->update(['text' => $title_translation['text']]);
         }
 
         $response = [
@@ -121,6 +121,6 @@ class SectionItemController extends Controller
             "message" => "Section item deleted."
         ];
 
-        return response()->json($response, 200);
+        return response()->json($response);
     }
 }
