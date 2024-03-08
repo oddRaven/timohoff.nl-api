@@ -9,6 +9,8 @@ use App\Http\Controllers\WaypointController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SectionItemController;
+use App\Http\Controllers\ProfileCollectionController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +47,19 @@ Route::get('section-item/{type}/{id}', [SectionItemController::class, 'find']);
 Route::middleware('auth')->post('section-item', [SectionItemController::class, 'store']);
 Route::middleware('auth')->put('section-item/{type}/{id}', [SectionItemController::class, 'update']);
 Route::middleware('auth')->delete('section-item/{type}/{id}', [SectionItemController::class, 'delete']);
+
+Route::get('profile-collection', [ProfileCollectionController::class, 'index']);
+Route::get('profile-collection/{id}', [ProfileCollectionController::class, 'show']);
+Route::get('profile-collection/{id}/profiles', [ProfileCollectionController::class, 'show_profiles']);
+Route::middleware('auth')->post('profile-collection', [ProfileCollectionController::class, 'store']);
+Route::middleware('auth')->put('profile-collection/{id}', [ProfileCollectionController::class, 'update']);
+Route::middleware('auth')->delete('profile-collection/{id}', [ProfileCollectionController::class, 'destroy']);
+
+Route::get('profile', [ProfileController::class, 'index']);
+Route::get('profile/{id}', [ProfileController::class, 'show']);
+Route::middleware('auth')->post('profile', [ProfileController::class, 'store']);
+Route::middleware('auth')->put('profile/{id}', [ProfileController::class, 'update']);
+Route::middleware('auth')->delete('profile/{id}', [ProfileController::class, 'destroy']);
 
 Route::get('timeline/{id}', [TimelineController::class, 'find']);
 
