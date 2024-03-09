@@ -17,7 +17,7 @@ class WaypointController extends Controller
         return response()->json($waypoints);
     }
 
-    public function find(Request $request, $id)
+    public function show(Request $request, $id)
     {
         $language_code = $request->header('Content-Language', 'nl');
 
@@ -44,5 +44,45 @@ class WaypointController extends Controller
             ->first();
 
         return response()->json($waypoint);
+    }
+
+    public function store (Request $request)
+    {
+        $waypoint = new Waypoint;
+        $waypoint->title = $request->title;
+        $waypoint->image_source = $request->image_source;
+        $waypoint->is_bound = $request->is_bound;
+        $waypoint->save();
+
+        $response = [
+            "message" => "Waypoint created.",
+            "timeline" => $waypoint
+        ];
+
+        return response()->json($response, 201);
+    }
+
+    public function update (Request $request, $id)
+    {
+        $waypoint = Waypoint::find($id)
+            ->update(['title' => $request->title, 'image_source' => $request->image_source, 'is_bound' => $request->is_bound]);
+
+        $response = [
+            "message" => "Waypoint updated.",
+            "waypoint" => $waypoint
+        ];
+
+        return response()->json($response);
+    }
+
+    public function destroy (Request $request, $id)
+    {
+        Waypoint::destroy($id);
+
+        $response = [
+            "message" => "Waypoint deleted."
+        ];
+
+        return response()->json($response);
     }
 }

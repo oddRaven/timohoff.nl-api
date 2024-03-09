@@ -41,7 +41,7 @@ class ArticleController extends Controller
             ->join('language_translations AS translation', function (JoinClause $join) {
                 $join->on('articles.title_translation_id', '=', 'translation.translation_id');
             })
-            ->select('translation.language_code AS code', 'translation.text AS text')
+            ->select('translation.*')
             ->where('articles.id', $id)
             ->get();
 
@@ -49,7 +49,7 @@ class ArticleController extends Controller
             ->join('language_translations AS translation', function (JoinClause $join) {
                 $join->on('articles.text_translation_id', '=', 'translation.translation_id');
             })
-            ->select('translation.language_code AS code', 'translation.text AS text')
+            ->select('translation.*')
             ->where('articles.id', $id)
             ->get();
 

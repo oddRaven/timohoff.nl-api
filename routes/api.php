@@ -61,7 +61,14 @@ Route::middleware('auth')->post('profile', [ProfileController::class, 'store']);
 Route::middleware('auth')->put('profile/{id}', [ProfileController::class, 'update']);
 Route::middleware('auth')->delete('profile/{id}', [ProfileController::class, 'destroy']);
 
-Route::get('timeline/{id}', [TimelineController::class, 'find']);
+Route::get('timeline', [TimelineController::class, 'index']);
+Route::get('timeline/{id}', [TimelineController::class, 'show']);
+Route::middleware('auth')->post('timeline', [TimelineController::class, 'store']);
+Route::middleware('auth')->put('timeline/{id}', [TimelineController::class, 'update']);
+Route::middleware('auth')->delete('timeline/{id}', [TimelineController::class, 'destroy']);
 
 Route::get('waypoint', [WaypointController::class, 'index']);
-Route::get('waypoint/{id}', [WaypointController::class, 'find']);
+Route::get('waypoint/{id}', [WaypointController::class, 'show']);
+Route::middleware('auth')->post('waypoint', [WaypointController::class, 'store']);
+Route::middleware('auth')->put('waypoint/{id}', [WaypointController::class, 'update']);
+Route::middleware('auth')->delete('waypoint/{id}', [WaypointController::class, 'destroy']);
