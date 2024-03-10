@@ -31,19 +31,19 @@ Route::post('authentication', [AuthenticationController::class, 'login']);
 Route::delete('authentication', [AuthenticationController::class, 'logout']);
 
 Route::get('article', [ArticleController::class, 'index']);
-Route::get('article/{id}', [ArticleController::class, 'find']);
+Route::get('article/{id}', [ArticleController::class, 'show']);
 Route::middleware('auth')->post('article', [ArticleController::class, 'store']);
 Route::middleware('auth')->put('article/{id}', [ArticleController::class, 'update']);
 Route::middleware('auth')->delete('article/{id}', [ArticleController::class, 'delete']);
 
 Route::get('section', [SectionController::class, 'index']);
-Route::get('section/{id}', [SectionController::class, 'find']);
+Route::get('section/{id}', [SectionController::class, 'show']);
 Route::middleware('auth')->post('section', [SectionController::class, 'store']);
 Route::middleware('auth')->put('section/{id}', [SectionController::class, 'update']);
 Route::middleware('auth')->delete('section/{id}', [SectionController::class, 'delete']);
 
 Route::get('section-item', [SectionItemController::class, 'index']);
-Route::get('section-item/{type}/{id}', [SectionItemController::class, 'find']);
+Route::get('section-item/{type}/{id}', [SectionItemController::class, 'show']);
 Route::middleware('auth')->post('section-item', [SectionItemController::class, 'store']);
 Route::middleware('auth')->put('section-item/{type}/{id}', [SectionItemController::class, 'update']);
 Route::middleware('auth')->delete('section-item/{type}/{id}', [SectionItemController::class, 'delete']);

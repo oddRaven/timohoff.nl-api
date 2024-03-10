@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Article;
 use App\Models\SectionItem;
 use App\Models\LanguageTranslation;
+use App\Models\ProfileCollection;
 use App\Models\Translation;
 
 class SectionItemController extends Controller
@@ -33,7 +34,7 @@ class SectionItemController extends Controller
         return response()->json($section_items);
     }
 
-    public function find (Request $request, $type, $id)
+    public function show (Request $request, $type, $id)
     {
         $language_code = $request->header('Content-Language', 'nl');
 
@@ -89,7 +90,7 @@ class SectionItemController extends Controller
 
     public function update (Request $request, $type, $id)
     {
-        $section_item = SectionItem::where('item_id', '=', $id, 'and')
+        SectionItem::where('item_id', '=', $id, 'and')
             ->where('item_type', '=', $type)
             ->update(['order' => $request->order]);
 
@@ -99,6 +100,10 @@ class SectionItemController extends Controller
                 ->where('language_code', '=', $title_translation['language_code'])
                 ->update(['text' => $title_translation['text']]);
         }
+
+        $section_item = SectionItem::where('item_id', '=', $id, 'and')
+            ->where('item_type', '=', $type)
+            ->first();
 
         $response = [
             "message" => "Section item updated.",
@@ -113,8 +118,11 @@ class SectionItemController extends Controller
         $section_item = SectionItem::where('item_id', '=', $id, 'and')->where('item_type', '=', $type); 
         $section_item->delete();
 
-        if ($type == 'Articles') {
+        if ($type == 'articles') {
             Article::destroy($id);
+        }
+        else if ($type == 'profile_collections') {
+            ProfileCollection::destroy($id);
         }
 
         $response = [

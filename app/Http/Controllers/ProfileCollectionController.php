@@ -74,13 +74,15 @@ class ProfileCollectionController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $profile_collection = ProfileCollection::join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
-                $join->on('profile_collections.title_translation_id', '=', 'translation.translation_id')
-                    ->where('translation.language_code', '=', $language_code);
+        $profile_collection = ProfileCollection::find($id);
+
+        $profile_collection->title_translations = DB::table('profile_collections')
+            ->join('language_translations AS translation', function (JoinClause $join) {
+                $join->on('profile_collections.title_translation_id', '=', 'translation.translation_id');
             })
-            ->select('profile_collections.*', 'translation.text AS title')
+            ->select('translation.*')
             ->where('profile_collections.id', $id)
-            ->first();
+            ->get();
 
         return response()->json($profile_collection);
     }

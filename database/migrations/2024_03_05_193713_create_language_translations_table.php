@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('translation_id');
             $table->char('language_code', 2);
             $table->timestamps();
-            $table->longText('text');
+            $table->longText('text')->nullable();
 
             $table->primary(['translation_id', 'language_code']);
             $table->foreign('translation_id')->references('id')->on('translations');

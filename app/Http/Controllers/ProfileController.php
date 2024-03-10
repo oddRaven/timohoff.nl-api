@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\Profile;
+use App\Models\ProfileCollection;
 use App\Models\LanguageTranslation;
 use App\Models\Translation;
 
@@ -19,12 +20,17 @@ class ProfileController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $profiles = Profile::join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
+        $query = Profile::join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
                 $join->on('profiles.title_translation_id', '=', 'translation.translation_id')
                     ->where('translation.language_code', '=', $language_code);
             })
-            ->select('profiles.*', 'translation.text AS title')
-            ->get();
+            ->select('profiles.*', 'translation.text AS title');
+
+        if ($request->has('profile_collection_id')) {
+            $query = $query->where('profile_collection_id', $request->query('profile_collection_id'));
+        }
+
+        $profiles = $query->get();
 
         return response()->json($profiles);
     }
@@ -55,6 +61,8 @@ class ProfileController extends Controller
         }
 
         $profile = new Profile; 
+        $profile->profile_collection_id = $request->profile_collection_id;
+        $profile->article_id = $request->article_id;
         $profile->title_translation_id = $translation->id;
         $profile->save();
 
@@ -73,13 +81,21 @@ class ProfileController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $profile = ProfileCollection::join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
+        $profile = Profile::join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
                 $join->on('profiles.title_translation_id', '=', 'translation.translation_id')
                     ->where('translation.language_code', '=', $language_code);
             })
             ->select('profiles.*', 'translation.text AS title')
             ->where('profiles.id', $id)
             ->first();
+
+        $profile->title_translations = DB::table('profiles')
+            ->join('language_translations AS translation', function (JoinClause $join) {
+                $join->on('profiles.title_translation_id', '=', 'translation.translation_id');
+            })
+            ->select('translation.*')
+            ->where('profiles.id', $id)
+            ->get();
 
         return response()->json($profile);
     }

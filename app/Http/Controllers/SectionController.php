@@ -27,7 +27,7 @@ class SectionController extends Controller
         return response()->json($sections);
     }
 
-    public function find (Request $request, $id)
+    public function show (Request $request, $id)
     {
         $section = Section::find($id);
 

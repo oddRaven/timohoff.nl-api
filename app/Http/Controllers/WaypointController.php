@@ -64,8 +64,10 @@ class WaypointController extends Controller
 
     public function update (Request $request, $id)
     {
-        $waypoint = Waypoint::find($id)
+        Waypoint::find($id)
             ->update(['title' => $request->title, 'image_source' => $request->image_source, 'is_bound' => $request->is_bound]);
+
+        $waypoint = Waypoint::find($id);
 
         $response = [
             "message" => "Waypoint updated.",

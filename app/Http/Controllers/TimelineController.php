@@ -73,13 +73,15 @@ class TimelineController extends Controller
 
     public function update (Request $request, $id)
     {
-        $timeline = Timeline::find($id)
+        Timeline::find($id)
             ->update(['title' => $request->title]);
 
         $response = [
             "message" => "Timeline updated.",
             "timeline" => $timeline
         ];
+
+        $timeline = Timeline::find($id);
 
         return response()->json($response);
     }

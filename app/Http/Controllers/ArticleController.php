@@ -31,7 +31,7 @@ class ArticleController extends Controller
         return response()->json($articles);
     }
     
-    public function find (Request $request, $id)
+    public function show (Request $request, $id)
     {
         $language_code = $request->header('Content-Language', 'nl');
 
@@ -106,7 +106,7 @@ class ArticleController extends Controller
 
     private function update_translations($translation_id, $translations)
     {
-        foreach ($request->translations as $translation) {
+        foreach ($translations as $translation) {
             $language_translation = DB::table('language_translations')
                 ->where('translation_id', '=', $translation_id)
                 ->where('language_code', '=', $translation['language_code'])
