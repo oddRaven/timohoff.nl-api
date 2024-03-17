@@ -123,8 +123,9 @@ class ProfileCollectionController extends Controller
     public function destroy(string $id)
     {
         $profile_collection = ProfileCollection::find($id);
-        Translation::destroy($profile_collection->title_translation_id);
         $profile_collection->destroy($id);
+
+        Translation::destroy($profile_collection->title_translation_id);
 
         $response = [
             "message" => "Profile collection deleted."

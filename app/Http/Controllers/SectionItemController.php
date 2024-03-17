@@ -99,12 +99,15 @@ class SectionItemController extends Controller
 
     public function delete (Request $request, $type, $id)
     {
-        $section_item = SectionItem::where(['item_id' => $id, 'item_type' => $type])
-            ->first();
-        Translation::destroy($section_item->title_translation_id);
-        $section_item->delete();
+        DB::table($type)->delete($id);
 
-        DB::table($type)->destroy($id);
+        $timeline = SectionItem::where(['item_id' => $id, 'item_type' => $type])
+            ->first();
+
+        Translation::destroy($timeline->title_translation_id);
+
+        SectionItem::where(['item_id' => $id, 'item_type' => $type])
+            ->delete();
 
         $response = [
             "message" => "Section item deleted."

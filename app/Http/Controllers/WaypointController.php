@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\JoinClause;
 
 use App\Models\Waypoint;
+use App\Models\Translation;
 use App\Services\TranslationService;
 
 class WaypointController extends Controller
@@ -79,8 +80,9 @@ class WaypointController extends Controller
     public function destroy (Request $request, $id)
     {
         $waypoint = Waypoint::find($id);
-        Waypoint::destroy($waypoint->title_translation_id);
         $waypoint->delete();
+
+        Translation::destroy($waypoint->title_translation_id);
 
         $response = [
             "message" => "Waypoint deleted."

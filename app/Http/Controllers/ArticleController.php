@@ -80,9 +80,10 @@ class ArticleController extends Controller
     public function delete (Request $request, $id)
     {
         $article = Article::find($id);
+        $article->delete($id);
+
         Translation::destroy($article->title_translation_id);
         Translation::destroy($article->text_translation_id);
-        $article->delete($id);
 
         $response = [
             "message" => "Article deleted."

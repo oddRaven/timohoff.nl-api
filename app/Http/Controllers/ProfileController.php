@@ -119,8 +119,9 @@ class ProfileController extends Controller
     public function destroy(string $id)
     {
         $profile = Profile::find($id);
-        Translation::destroy($profile->title_translation_id);
         $profile->destroy($id);
+
+        Translation::destroy($profile->title_translation_id);
 
         $response = [
             "message" => "Profile deleted."

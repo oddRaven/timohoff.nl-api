@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\Waypoint;
+use App\Models\Translation;
 use App\Services\TranslationService;
 
 class TimelineController extends Controller
@@ -91,8 +92,9 @@ class TimelineController extends Controller
     public function destroy (Request $request, $id)
     {
         $timeline = Timeline::find($id);
-        Translation::destroy($timeline->title_translation_id);
         $timeline->delete();
+
+        Translation::destroy($timeline->title_translation_id);
 
         $response = [
             "message" => "Timeline deleted."

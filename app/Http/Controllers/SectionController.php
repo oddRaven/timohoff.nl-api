@@ -74,9 +74,10 @@ class SectionController extends Controller
 
     public function delete (Request $request, $id)
     {
-        $section = Profile::find($id);
-        Translation::destroy($section->title_translation_id);
+        $section = Section::find($id);
         $section->destroy($id);
+
+        Translation::destroy($section->title_translation_id);
 
         $response = [
             "message" => "Section deleted."
