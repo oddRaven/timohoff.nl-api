@@ -7,9 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\Waypoint;
+use App\Services\TranslationService;
 
 class TimelineController extends Controller
 {
+    private TranslationService $translation_service;
+
+    public function __construct ()
+    {
+        $this->translation_service = new TranslationService;
+    }
+
     public function index(Request $request)
     {
         $timeline = Waypoint::all();
@@ -25,23 +33,17 @@ class TimelineController extends Controller
             ->find($id);
 
         if ($request->has('include_phases')) {
-            $timeline->phases = DB::table('phases')
-                ->join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
-                    $join->on('phases.title_translation_id', '=', 'translation.translation_id')
-                        ->where('translation.language_code', '=', $language_code);
-                })
-                ->select('phases.id', 'phases.timeline_id', 'phases.color', 'translation.text AS title')
+            $query = DB::table('phases');
+            $query = $this->translation_service->join($query, 'phases', 'title_translation_id', 'translation', $language_code);
+            $timeline->phases = $query->select('phases.id', 'phases.timeline_id', 'phases.color', 'translation.text AS title')
                 ->where('phases.timeline_id', $id)
                 ->get();
 
             if ($request->has('include_waypoints')) {
                 foreach($timeline->phases as $phase){
-                    $phase->waypoints = DB::table('waypoints')
-                        ->join('language_translation AS translation', function (JoinClause $join) use ($language_code) {
-                            $join->on('waypoints.title_translation_id', '=', 'translation.translation_id')
-                                ->where('translation.language_code', '=', $language_code);
-                        })
-                        ->select('waypoints.*', 'translation.text AS title')
+                    $query = DB::table('waypoints');
+                    $query = $this->translation_service->join($query, 'waypoints', 'title_translation_id', 'translation', $language_code);
+                    $phase->waypoints = $query->select('waypoints.*', 'translation.text AS title')
                         ->where('waypoints.phase_id', $phase->id)
                         ->get();
 
@@ -88,7 +90,9 @@ class TimelineController extends Controller
 
     public function destroy (Request $request, $id)
     {
-        Timeline::destroy($id);
+        $timeline = Timeline::find($id);
+        Translation::destroy($timeline->title_translation_id);
+        $timeline->delete();
 
         $response = [
             "message" => "Timeline deleted."

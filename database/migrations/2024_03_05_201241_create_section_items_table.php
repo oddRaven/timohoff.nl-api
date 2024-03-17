@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('title_translation_id');
             $table->integer('order')->default(0);
 
-            $table->primary('item_id', 'item_type');
+            $table->primary(['item_id', 'item_type']);
             $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
             $table->foreign('title_translation_id')->references('id')->on('translations');
         });

@@ -10,18 +10,24 @@ use App\Models\Section;
 use App\Models\LanguageTranslation;
 use App\Models\Translation;
 
+use App\Services\TranslationService;
+
 class SectionController extends Controller
 {
+    private TranslationService $translation_service;
+
+    public function __construct ()
+    {
+        $this->translation_service = new TranslationService;
+    }
+
     public function index(Request $request)
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $sections = DB::table('sections')
-            ->join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
-                $join->on('sections.title_translation_id', '=', 'translation.translation_id')
-                    ->where('translation.language_code', '=', $language_code);
-            })
-            ->select('sections.*', 'translation.text AS title')
+        $query = DB::table('sections');
+        $query = $this->translation_service->join($query, 'sections', 'title_translation_id', 'translation', $language_code);
+        $sections = $query->select('sections.*', 'translation.text AS title')
             ->get();
 
         return response()->json($sections);
@@ -30,35 +36,16 @@ class SectionController extends Controller
     public function show (Request $request, $id)
     {
         $section = Section::find($id);
-
-        $section->title_translations = DB::table('sections')
-            ->join('language_translations AS translation', function (JoinClause $join) {
-                $join->on('sections.title_translation_id', '=', 'translation.translation_id');
-            })
-            ->select('translation.*')
-            ->where('sections.id', $id)
-            ->get();
+        $section->title_translations = $this->translation_service->get('sections', 'title_translation_id', ['id' => $id]);
 
         return response()->json($section);
     }
 
     public function store (Request $request)
     {
-        $translation = new Translation;
-        $translation->title = 'section title';
-        $translation->save();
-
-        foreach ($request->title_translations as $title_translation) {
-            $language_translation = new LanguageTranslation;
-            $language_translation->translation_id = $translation->id;
-            $language_translation->language_code = $title_translation['language_code'];
-            $language_translation->text = $title_translation['text'];
-            $language_translation->save();
-        }
-
         $section = new Section; 
         $section->order = $request->order ?? 0;
-        $section->title_translation_id = $translation->id;
+        $section->title_translation_id = $this->translation_service->store($request->title_translations, 'section title');
         $section->save();
 
         $response = [
@@ -75,12 +62,7 @@ class SectionController extends Controller
         $section->order = $request->order;
         $section->save();
 
-        foreach ($request->title_translations as $title_translation) {
-            $language_translation = DB::table('language_translations')
-                ->where('translation_id', '=', $request->title_translation_id)
-                ->where('language_code', '=', $title_translation['language_code'])
-                ->update(['text' => $title_translation['text']]);
-        }
+        $this->translation_service->update($request->title_translation_id, $request->title_translations);
 
         $response = [
             "message" => "Section updated.",
@@ -92,7 +74,9 @@ class SectionController extends Controller
 
     public function delete (Request $request, $id)
     {
-        Section::destroy($id);
+        $section = Profile::find($id);
+        Translation::destroy($section->title_translation_id);
+        $section->destroy($id);
 
         $response = [
             "message" => "Section deleted."

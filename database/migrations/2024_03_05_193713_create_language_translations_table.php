@@ -18,7 +18,9 @@ return new class extends Migration
             $table->longText('text')->nullable();
 
             $table->primary(['translation_id', 'language_code']);
-            $table->foreign('translation_id')->references('id')->on('translations');
+            $table->foreign('translation_id')
+                ->references('id')->on('translations')
+                ->onDelete('cascade');
             $table->foreign('language_code')->references('code')->on('languages');
         });
     }

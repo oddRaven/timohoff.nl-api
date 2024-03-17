@@ -11,8 +11,17 @@ use App\Models\ProfileCollection;
 use App\Models\LanguageTranslation;
 use App\Models\Translation;
 
+use App\Services\TranslationService;
+
 class ProfileCollectionController extends Controller
 {
+    private TranslationService $translation_service;
+
+    public function __construct ()
+    {
+        $this->translation_service = new TranslationService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -20,11 +29,9 @@ class ProfileCollectionController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $profile_collections = ProfileCollection::join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
-                $join->on('profile_collections.title_translation_id', '=', 'translation.translation_id')
-                    ->where('translation.language_code', '=', $language_code);
-            })
-            ->select('profile_collections.*', 'translation.text AS title')
+        $query = DB::table('profile_collections');
+        $query = $this->translation_service->join($query, 'profile_collections', 'title_translation_id', 'translation', $language_code);
+        $profile_collections = $query->select('profile_collections.*', 'translation.text AS title')
             ->get();
 
         return response()->json($profile_collections);
@@ -43,20 +50,8 @@ class ProfileCollectionController extends Controller
      */
     public function store(Request $request)
     {
-        $translation = new Translation;
-        $translation->title = 'profile collection title';
-        $translation->save();
-
-        foreach ($request->title_translations as $title_translation) {
-            $language_translation = new LanguageTranslation;
-            $language_translation->translation_id = $translation->id;
-            $language_translation->language_code = $title_translation['language_code'];
-            $language_translation->text = $title_translation['text'];
-            $language_translation->save();
-        }
-
         $profile_collection = new ProfileCollection; 
-        $profile_collection->title_translation_id = $translation->id;
+        $profile_collection->title_translation_id = $this->translation_service->store($request->title_translations, 'profile collection title');
         $profile_collection->save();
 
         $response = [
@@ -76,13 +71,7 @@ class ProfileCollectionController extends Controller
 
         $profile_collection = ProfileCollection::find($id);
 
-        $profile_collection->title_translations = DB::table('profile_collections')
-            ->join('language_translations AS translation', function (JoinClause $join) {
-                $join->on('profile_collections.title_translation_id', '=', 'translation.translation_id');
-            })
-            ->select('translation.*')
-            ->where('profile_collections.id', $id)
-            ->get();
+        $profile_collection->title_translations = $this->translation_service->get('profile_collections', 'title_translation_id', ['id' => $id]);
 
         return response()->json($profile_collection);
     }
@@ -91,11 +80,9 @@ class ProfileCollectionController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $profile_collection = ProfileCollection::join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
-                $join->on('profile_collections.title_translation_id', '=', 'translation.translation_id')
-                    ->where('translation.language_code', '=', $language_code);
-            })
-            ->join('profiles', function(JoinClause $join) use ($language_code) {
+        $query = DB::table('profile_collections');
+        $query = $this->translation_service->join($query, 'profile_collections', 'title_translation_id', 'translation', $language_code);
+        $profile_collection = $query->join('profiles', function(JoinClause $join) use ($language_code) {
                 $join->on('profile_collections.id', '=', 'profiles.profile_collection_id');
             })
             ->select('profile_collections.*', 'translation.text AS title')
@@ -120,13 +107,7 @@ class ProfileCollectionController extends Controller
     {
         $profile_collection = ProfileCollection::find($id); 
         $profile_collection->save();
-
-        foreach ($request->title_translations as $title_translation) {
-            $language_translation = DB::table('language_translations')
-                ->where('translation_id', '=', $request->title_translation_id)
-                ->where('language_code', '=', $title_translation['language_code'])
-                ->update(['text' => $title_translation['text']]);
-        }
+        $this->translation_service->update($request->title_translation_id, $request->title_translations);
 
         $response = [
             "message" => "Profile collection updated.",
@@ -141,7 +122,9 @@ class ProfileCollectionController extends Controller
      */
     public function destroy(string $id)
     {
-        ProfileCollection::destroy($id);
+        $profile_collection = ProfileCollection::find($id);
+        Translation::destroy($profile_collection->title_translation_id);
+        $profile_collection->destroy($id);
 
         $response = [
             "message" => "Profile collection deleted."

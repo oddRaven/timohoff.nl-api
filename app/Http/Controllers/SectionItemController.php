@@ -12,18 +12,24 @@ use App\Models\LanguageTranslation;
 use App\Models\ProfileCollection;
 use App\Models\Translation;
 
+use App\Services\TranslationService;
+
 class SectionItemController extends Controller
 {
+    private TranslationService $translation_service;
+
+    public function __construct ()
+    {
+        $this->translation_service = new TranslationService;
+    }
+
     public function index(Request $request)
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $query = DB::table('section_items')
-            ->join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
-                $join->on('section_items.title_translation_id', '=', 'translation.translation_id')
-                    ->where('translation.language_code', '=', $language_code);
-            })
-            ->select('section_items.*', 'translation.text AS title');
+        $query = DB::table('section_items');
+        $query = $this->translation_service->join($query, 'section_items', 'title_translation_id', 'translation', $language_code);
+        $query = $query->select('section_items.*', 'translation.text AS title');
             
         if ($request->has('section_id')) {
             $query = $query->where('section_id', $request->query('section_id'));
@@ -47,37 +53,20 @@ class SectionItemController extends Controller
             ->where('id', $id)
             ->first();*/
 
-        $section_item->title_translations = DB::table('section_items')
-            ->join('language_translations AS translation', function (JoinClause $join) {
-                $join->on('section_items.title_translation_id', '=', 'translation.translation_id');
-            })
-            ->select('translation.*')
-            ->where(['section_items.item_id' => $id, 'section_items.item_type' => $type])
-            ->get();
+        $identifiers = ['item_id' => $id, 'item_type' => $type];
+        $section_item->title_translations = $this->translation_service->get('section_items', 'title_translation_id', $identifiers);
 
         return response()->json($section_item);
     }
 
     public function store (Request $request)
     {
-        $translation = new Translation;
-        $translation->title = 'section item title';
-        $translation->save();
-
-        foreach ($request->title_translations as $title_translation) {
-            $language_translation = new LanguageTranslation;
-            $language_translation->translation_id = $translation->id;
-            $language_translation->language_code = $title_translation['language_code'];
-            $language_translation->text = $title_translation['text'];
-            $language_translation->save();
-        }
-
         $section_item = new SectionItem; 
         $section_item->item_id = $request->item_id;
         $section_item->item_type = $request->item_type;
         $section_item->section_id = $request->section_id;
         $section_item->order = $request->order ?? 0;
-        $section_item->title_translation_id = $translation->id;
+        $section_item->title_translation_id = $this->translation_service->store($request->title_translations, 'section item title');
         $section_item->save();
 
         $response = [
@@ -94,12 +83,7 @@ class SectionItemController extends Controller
             ->where('item_type', '=', $type)
             ->update(['order' => $request->order]);
 
-        foreach ($request->title_translations as $title_translation) {
-            $language_translation = DB::table('language_translations')
-                ->where('translation_id', '=', $request->title_translation_id)
-                ->where('language_code', '=', $title_translation['language_code'])
-                ->update(['text' => $title_translation['text']]);
-        }
+        $this->translation_service->update($request->title_translation_id, $request->title_translations);
 
         $section_item = SectionItem::where('item_id', '=', $id, 'and')
             ->where('item_type', '=', $type)
@@ -115,15 +99,12 @@ class SectionItemController extends Controller
 
     public function delete (Request $request, $type, $id)
     {
-        $section_item = SectionItem::where('item_id', '=', $id, 'and')->where('item_type', '=', $type); 
+        $section_item = SectionItem::where(['item_id' => $id, 'item_type' => $type])
+            ->first();
+        Translation::destroy($section_item->title_translation_id);
         $section_item->delete();
 
-        if ($type == 'articles') {
-            Article::destroy($id);
-        }
-        else if ($type == 'profile_collections') {
-            ProfileCollection::destroy($id);
-        }
+        DB::table($type)->destroy($id);
 
         $response = [
             "message" => "Section item deleted."

@@ -7,9 +7,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\JoinClause;
 
 use App\Models\Waypoint;
+use App\Services\TranslationService;
 
 class WaypointController extends Controller
 {
+    private TranslationService $translation_service;
+
+    public function __construct ()
+    {
+        $this->translation_service = new TranslationService;
+    }
+
     public function index() 
     {
         $waypoints = Waypoint::all();
@@ -21,25 +29,16 @@ class WaypointController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $waypoint = DB::table('waypoints')
-            ->join('language_translations AS translation', function (JoinClause $join) use ($language_code) {
-                $join->on('waypoints.title_translation_id', '=', 'translation.translation_id')
-                    ->where('translation.language_code', '=', $language_code);
-            })
-            ->select('waypoints.*', 'translation.text AS title')
+        $query = DB::table('waypoints');
+        $query = $this->translation_service->join($query, 'waypoints', 'title_translation_id', 'translation', $language_code);
+        $waypoint = $query->select('waypoints.*', 'translation.text AS title')
             ->where('waypoints.id', $id)
             ->first();
 
-        $waypoint->article = DB::table('articles')
-            ->join('language_translations AS titleTranslation', function (JoinClause $join) use ($language_code) {
-                $join->on('articles.title_translation_id', '=', 'titleTranslation.translation_id')
-                    ->where('titleTranslation.language_code', '=', $language_code);
-            })
-            ->join('language_translations AS textTranslation', function (JoinClause $join) use ($language_code) {
-                $join->on('articles.text_translation_id', '=', 'textTranslation.translation_id')
-                    ->where('textTranslation.language_code', '=', $language_code);
-            })
-            ->select('articles.id', 'titleTranslation.text AS title', 'textTranslation.text AS text')
+        $query = DB::table('articles');
+        $query = $this->translation_service->join($query, 'articles', 'title_translation_id', 'titleTranslation', $language_code);
+        $query = $this->translation_service->join($query, 'articles', 'title_translation_id', 'textTranslation', $language_code);
+        $waypoint->article = $query->select('articles.id', 'titleTranslation.text AS title', 'textTranslation.text AS text')
             ->where('articles.id', $waypoint->article_id)
             ->first();
 
@@ -79,7 +78,9 @@ class WaypointController extends Controller
 
     public function destroy (Request $request, $id)
     {
-        Waypoint::destroy($id);
+        $waypoint = Waypoint::find($id);
+        Waypoint::destroy($waypoint->title_translation_id);
+        $waypoint->delete();
 
         $response = [
             "message" => "Waypoint deleted."
