@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('languages', function(Blueprint $table){
+            $table->timestamps();
             $table->string('code', 2)->unique();
             $table->string('name')->unique();
 

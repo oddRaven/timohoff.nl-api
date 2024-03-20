@@ -38,10 +38,16 @@ class ArticleController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $article = Article::find($id);
+        $query = DB::table('articles');
+        $query = $this->translation_service->join($query, 'articles', 'title_translation_id', 'titleTranslation', $language_code);
+        $query = $this->translation_service->join($query, 'articles', 'text_translation_id', 'textTranslation', $language_code);
+        $article = $query->select('articles.id', 'titleTranslation.text AS title', 'textTranslation.text AS text')
+            ->find($id);
 
-        $article->title_translations = $this->translation_service->get('articles', 'title_translation_id', ['id' => $id]);
-        $article->text_translations = $this->translation_service->get('articles', 'text_translation_id', ['id' => $id]);
+        if ($request->has('include_language_translations')) {
+            $article->title_translations = $this->translation_service->get('articles', 'title_translation_id', ['id' => $id]);
+            $article->text_translations = $this->translation_service->get('articles', 'text_translation_id', ['id' => $id]);
+        }
 
         return response()->json($article);
     }
