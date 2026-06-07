@@ -30,6 +30,28 @@ class SectionController extends Controller
         $sections = $query->select('sections.*', 'translation.text AS title')
             ->get();
 
+        if ($request->has('include_section_items')) {
+            foreach ($sections as $section) {
+                $query = DB::table('section_items')
+                    ->where('section_items.section_id', $section->id);
+                $query = $this->translation_service->join($query, 'section_items', 'title_translation_id', 'translation', $language_code);
+
+                $section->items = $query->select('section_items.*', 'translation.text AS title')
+                    ->get();
+
+                foreach ($section->items as $item) {
+                    $query = DB::table($item->item_type)
+                        ->where('id', $item->item_id);
+
+                    $query = $this->translation_service->join($query, $item->item_type, 'title_translation_id', 'title_translation', $language_code);
+                    $query = $this->translation_service->join($query, $item->item_type, 'text_translation_id', 'text_translation', $language_code);
+
+                    $item->article = $query->select($item->item_type . '.*', 'title_translation.text AS title', 'text_translation.text AS text')
+                        ->first();
+                }
+            }
+        }
+
         return response()->json($sections);
     }
 
