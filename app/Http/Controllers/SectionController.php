@@ -46,8 +46,24 @@ class SectionController extends Controller
                     $query = $this->translation_service->join($query, $item->item_type, 'title_translation_id', 'title_translation', $language_code);
                     $query = $this->translation_service->join($query, $item->item_type, 'text_translation_id', 'text_translation', $language_code);
 
-                    $item->article = $query->select($item->item_type . '.*', 'title_translation.text AS title', 'text_translation.text AS text')
-                        ->first();
+                    if ($item->item_type === 'articles') {
+                        $item->article = $query->select($item->item_type . '.*', 'title_translation.text AS title', 'text_translation.text AS text')
+                            ->first();
+                    }
+                    else if ($item->item_type === 'profile_collections') {
+                        $query = DB::table('profiles')
+                            ->leftJoin('articles', 'profiles.article_id', '=', 'articles.id');
+                        $query = $this->translation_service->join($query, 'articles', 'title_translation_id', 'title_translation', $language_code);
+                        $query = $this->translation_service->join($query, 'articles', 'text_translation_id', 'text_translation', $language_code);
+                        $item->profiles = $query->select(
+                            'profiles.id AS id',
+                            'profiles.image_source AS image_source',
+                            'title_translation.text AS title',
+                            'text_translation.text AS text'
+                        )
+                            ->where('profiles.profile_collection_id', $item->item_id)
+                            ->get();
+                    }
                 }
             }
         }

@@ -101,13 +101,13 @@ class SectionItemController extends Controller
     {
         DB::table($type)->delete($id);
 
-        $timeline = SectionItem::where(['item_id' => $id, 'item_type' => $type])
+        $sectionItem = SectionItem::where(['item_id' => $id, 'item_type' => $type])
             ->first();
-
-        Translation::destroy($timeline->title_translation_id);
 
         SectionItem::where(['item_id' => $id, 'item_type' => $type])
             ->delete();
+
+        Translation::destroy($sectionItem->title_translation_id);
 
         $response = [
             "message" => "Section item deleted."
