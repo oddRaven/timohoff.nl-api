@@ -11,6 +11,7 @@ use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SectionItemController;
 use App\Http\Controllers\ProfileCollectionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\FileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +27,8 @@ use App\Http\Controllers\ProfileController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware('auth')->post('file/upload', [FileController::class, 'upload']);
 
 Route::post('authentication', [AuthenticationController::class, 'login']);
 Route::delete('authentication', [AuthenticationController::class, 'logout']);
