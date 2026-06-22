@@ -10,6 +10,7 @@ use App\Models\User;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ArticleControllerTest extends TestCase {
@@ -95,9 +96,7 @@ class ArticleControllerTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider data_test_index
-     */
+    #[DataProvider('data_test_index')]
     public function test_index ($language_code, $title, $text): void {
         // Arrange
         $path = "api/article";
@@ -137,9 +136,7 @@ class ArticleControllerTest extends TestCase {
         ];
     }
 
-    /**
-     * @dataProvider data_test_show
-     */
+    #[DataProvider('data_test_show')]
     public function test_show ($language_code, $title, $text): void {
         // Arrange
         $path = "api/article/{$this->article_id}";
