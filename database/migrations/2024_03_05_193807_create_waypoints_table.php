@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('article_id');
             $table->unsignedBigInteger('title_translation_id');
             $table->string('location');
-            $table->string('image_source')->nullable();
+            $table->string('image_name')->nullable();
             $table->boolean('is_bound');
 
             $table->foreign('phase_id')->references('id')->on('phases');

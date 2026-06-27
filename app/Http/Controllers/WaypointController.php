@@ -50,7 +50,7 @@ class WaypointController extends Controller
     {
         $waypoint = new Waypoint;
         $waypoint->title = $request->title;
-        $waypoint->image_source = $request->image_source;
+        $waypoint->image_name = $request->image_name;
         $waypoint->is_bound = $request->is_bound;
         $waypoint->save();
 
@@ -65,7 +65,7 @@ class WaypointController extends Controller
     public function update (Request $request, $id)
     {
         Waypoint::find($id)
-            ->update(['title' => $request->title, 'image_source' => $request->image_source, 'is_bound' => $request->is_bound]);
+            ->update(['title' => $request->title, 'image_name' => $request->image_name, 'is_bound' => $request->is_bound]);
 
         $waypoint = Waypoint::find($id);
 

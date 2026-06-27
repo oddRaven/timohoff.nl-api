@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('profile_collection_id');
             $table->unsignedBigInteger('article_id');
             $table->unsignedBigInteger('title_translation_id');
-            $table->string('image_source')->nullable();
+            $table->string('image_name')->nullable();
 
             $table->foreign('profile_collection_id')->references('id')->on('profile_collections')->onDelete('cascade');
             $table->foreign('article_id')->references('id')->on('articles');

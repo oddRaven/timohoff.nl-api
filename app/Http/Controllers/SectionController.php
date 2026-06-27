@@ -57,7 +57,7 @@ class SectionController extends Controller
                         $query = $this->translation_service->join($query, 'articles', 'text_translation_id', 'text_translation', $language_code);
                         $item->profiles = $query->select(
                             'profiles.id AS id',
-                            'profiles.image_source AS image_source',
+                            'profiles.image_name AS image_name',
                             'title_translation.text AS title',
                             'text_translation.text AS text'
                         )

@@ -11,14 +11,16 @@ use App\Models\ProfileCollection;
 use App\Models\LanguageTranslation;
 use App\Models\Translation;
 
+use App\Services\IFileService;
 use App\Services\TranslationService;
 
 class ProfileController extends Controller
 {
     private TranslationService $translation_service;
 
-    public function __construct ()
-    {
+    public function __construct (
+        private IFileService $fileService
+    ) {
         $this->translation_service = new TranslationService;
     }
 
@@ -59,6 +61,7 @@ class ProfileController extends Controller
         $profile->profile_collection_id = $request->profile_collection_id;
         $profile->article_id = $request->article_id;
         $profile->title_translation_id = $this->translation_service->store($request->title_translations, 'profile title');
+        $profile->image_name = $request->image_name;
         $profile->save();
 
         $response = [
@@ -100,7 +103,30 @@ class ProfileController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $profile = ProfileCollection::find($id); 
+        $profile = Profile::find($id);
+
+        $previous_image_name = $profile->image_name;
+
+        if ($previous_image_name === null) {
+            $profile->image_name = $request->image_name;
+        }
+        else {
+            // Extract extension from previous image name
+            $extension = pathinfo($previous_image_name, PATHINFO_EXTENSION);
+
+            // Construct new image name
+            $new_image_name = $request->image_name;
+            if (!pathinfo($new_image_name, PATHINFO_EXTENSION)) {
+                $new_image_name .= '.' . $extension;
+            }
+
+            // Only update if path has changed
+            if ($previous_image_name !== $new_image_name) {
+                $this->fileService->rename($previous_image_name, $new_image_name);
+                $profile->image_name = $new_image_name;
+            }
+        }
+
         $profile->save();
 
         $this->translation_service->update($request->title_translation_id, $request->title_translations);
