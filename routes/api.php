@@ -11,6 +11,7 @@ use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SectionItemController;
 use App\Http\Controllers\ProfileCollectionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PhaseController;
 use App\Http\Controllers\FileController;
 
 /*
@@ -69,6 +70,12 @@ Route::get('timeline/{id}', [TimelineController::class, 'show']);
 Route::middleware('auth')->post('timeline', [TimelineController::class, 'store']);
 Route::middleware('auth')->put('timeline/{id}', [TimelineController::class, 'update']);
 Route::middleware('auth')->delete('timeline/{id}', [TimelineController::class, 'destroy']);
+
+Route::get('phase', [PhaseController::class, 'index']);
+Route::get('phase/{id}', [PhaseController::class, 'show']);
+Route::middleware('auth')->post('phase', [PhaseController::class, 'store']);
+Route::middleware('auth')->put('phase/{id}', [PhaseController::class, 'update']);
+Route::middleware('auth')->delete('phase/{id}', [PhaseController::class, 'destroy']);
 
 Route::get('waypoint', [WaypointController::class, 'index']);
 Route::get('waypoint/{id}', [WaypointController::class, 'show']);

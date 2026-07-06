@@ -40,13 +40,12 @@ class SectionController extends Controller
                     ->get();
 
                 foreach ($section->items as $item) {
-                    $query = DB::table($item->item_type)
-                        ->where('id', $item->item_id);
-
-                    $query = $this->translation_service->join($query, $item->item_type, 'title_translation_id', 'title_translation', $language_code);
-                    $query = $this->translation_service->join($query, $item->item_type, 'text_translation_id', 'text_translation', $language_code);
-
                     if ($item->item_type === 'articles') {
+                        $query = DB::table('articles')
+                            ->where('articles.id', $item->item_id);
+                        $query = $this->translation_service->join($query, 'articles', 'title_translation_id', 'title_translation', $language_code);
+                        $query = $this->translation_service->join($query, 'articles', 'text_translation_id', 'text_translation', $language_code);
+
                         $item->article = $query->select($item->item_type . '.*', 'title_translation.text AS title', 'text_translation.text AS text')
                             ->first();
                     }
@@ -63,6 +62,32 @@ class SectionController extends Controller
                         )
                             ->where('profiles.profile_collection_id', $item->item_id)
                             ->get();
+                    }
+                    else if ($item->item_type === 'timelines') {
+                        $query = DB::table('timelines')
+                            ->where('timelines.id', $item->item_id);
+                        $query = $this->translation_service->join($query, 'timelines', 'title_translation_id', 'translation', $language_code);
+
+                        $item->timeline = $query->select('timelines.id', 'translation.text AS title')
+                            ->first();
+
+                        if ($item->timeline) {
+                            $query = DB::table('phases')
+                                ->where('phases.timeline_id', $item->timeline->id);
+                            $query = $this->translation_service->join($query, 'phases', 'title_translation_id', 'translation', $language_code);
+
+                            $item->timeline->phases = $query->select('phases.id', 'phases.timeline_id', 'phases.color', 'translation.text AS title')
+                                ->get();
+
+                            foreach ($item->timeline->phases as $phase) {
+                                $query = DB::table('waypoints')
+                                    ->where('waypoints.phase_id', $phase->id);
+                                $query = $this->translation_service->join($query, 'waypoints', 'title_translation_id', 'translation', $language_code);
+
+                                $phase->waypoints = $query->select('waypoints.id', 'waypoints.phase_id', 'waypoints.article_id', 'waypoints.location', 'waypoints.image_name', 'waypoints.is_bound', 'translation.text AS title')
+                                    ->get();
+                            }
+                        }
                     }
                 }
             }

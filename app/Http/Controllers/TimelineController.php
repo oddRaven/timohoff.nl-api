@@ -6,6 +6,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\Timeline;
 use App\Models\Waypoint;
 use App\Models\Translation;
 use App\Services\TranslationService;
@@ -30,8 +31,16 @@ class TimelineController extends Controller
     {
         $language_code = $request->header('Content-Language', 'nl');
 
-        $timeline = DB::table('timelines')
+        $query = DB::table('timelines');
+
+        $query = $this->translation_service->join($query, 'timelines', 'title_translation_id', 'titleTranslation', $language_code);
+
+        $timeline = $query->select('timelines.id', 'titleTranslation.text AS title')
             ->find($id);
+
+        if ($request->has('include_language_translations')) {
+            $timeline->title_translations = $this->translation_service->get('timelines', 'title_translation_id', ['id' => $id]);
+        }
 
         if ($request->has('include_phases')) {
             $query = DB::table('phases');
@@ -63,7 +72,7 @@ class TimelineController extends Controller
     public function store (Request $request)
     {
         $timeline = new Timeline;
-        $timeline->title = $request->title;
+        $timeline->title_translation_id = $this->translation_service->store($request->title_translations, 'timeline title');
         $timeline->save();
 
         $response = [
@@ -76,15 +85,15 @@ class TimelineController extends Controller
 
     public function update (Request $request, $id)
     {
-        Timeline::find($id)
-            ->update(['title' => $request->title]);
+        $timeline = Timeline::find($id);
+        $timeline->save();
+
+        $this->translation_service->update($request->title_translation_id, $request->title_translations);
 
         $response = [
             "message" => "Timeline updated.",
             "timeline" => $timeline
         ];
-
-        $timeline = Timeline::find($id);
 
         return response()->json($response);
     }

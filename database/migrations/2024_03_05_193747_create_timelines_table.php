@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('timelines', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->string('title');
+            $table->unsignedBigInteger('title_translation_id');
+
+            $table->foreign('title_translation_id')->references('id')->on('translations');
         });
     }
 
