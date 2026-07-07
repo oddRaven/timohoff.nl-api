@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->unsignedBigInteger('profile_collection_id');
-            $table->unsignedBigInteger('article_id');
+            $table->unsignedBigInteger('article_id')->nullable();
             $table->unsignedBigInteger('title_translation_id');
             $table->string('image_name')->nullable();
 

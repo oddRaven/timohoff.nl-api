@@ -48,12 +48,17 @@ class WaypointController extends Controller
             ->first();
 
         $query = DB::table('articles');
+
         $query = $this->translation_service->join($query, 'articles', 'title_translation_id', 'titleTranslation', $language_code);
         $query = $this->translation_service->join($query, 'articles', 'title_translation_id', 'textTranslation', $language_code);
 
         $waypoint->article = $query->select('articles.id', 'titleTranslation.text AS title', 'textTranslation.text AS text')
             ->where('articles.id', $waypoint->article_id)
             ->first();
+
+        if ($request->has('include_language_translations')) {
+            $waypoint->title_translations = $this->translation_service->get('waypoints', 'title_translation_id', ['id' => $id]);
+        }
 
         return response()->json($waypoint);
     }

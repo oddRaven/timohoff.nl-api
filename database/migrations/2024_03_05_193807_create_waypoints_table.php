@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->unsignedBigInteger('phase_id');
-            $table->unsignedBigInteger('article_id');
+            $table->unsignedBigInteger('article_id')->nullable();
             $table->unsignedBigInteger('title_translation_id');
             $table->string('location')->nullable();
             $table->string('image_name')->nullable();
