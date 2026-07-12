@@ -8,13 +8,16 @@ use Illuminate\Database\Query\JoinClause;
 
 use App\Models\Waypoint;
 use App\Models\Translation;
+use App\Services\ImageNameService;
 use App\Services\TranslationService;
 
 class WaypointController extends Controller
 {
     private TranslationService $translation_service;
 
-    public function __construct ()
+    public function __construct (
+        private ImageNameService $imageNameService
+    )
     {
         $this->translation_service = new TranslationService;
     }
@@ -87,13 +90,14 @@ class WaypointController extends Controller
     public function update (Request $request, $id)
     {
         $waypoint = Waypoint::find($id);
+        $resolved_image_name = $this->imageNameService->replaceImageName($waypoint->image_name, $request->image_name);
 
         DB::table('waypoints')
             ->where('id', $id)
             ->update([
                 'phase_id' => $request->phase_id,
                 'article_id' => $request->article_id,
-                'image_name' => $request->image_name,
+                'image_name' => $resolved_image_name,
                 'is_bound' => $request->is_bound,
                 'location' => $request->location,
                 'updated_at' => now()

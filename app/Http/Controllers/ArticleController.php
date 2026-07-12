@@ -10,13 +10,16 @@ use App\Models\Article;
 use App\Models\LanguageTranslation;
 use App\Models\Translation;
 
+use App\Services\ImageNameService;
 use App\Services\TranslationService;
 
 class ArticleController extends Controller
 {
     private TranslationService $translation_service;
 
-    public function __construct ()
+    public function __construct (
+        private ImageNameService $imageNameService
+    )
     {
         $this->translation_service = new TranslationService;
     }
@@ -28,7 +31,7 @@ class ArticleController extends Controller
         $query = DB::table('articles');
         $query = $this->translation_service->join($query, 'articles', 'title_translation_id', 'titleTranslation', $language_code);
         $query = $this->translation_service->join($query, 'articles', 'text_translation_id', 'textTranslation', $language_code);
-        $articles = $query->select('articles.id', 'titleTranslation.text AS title', 'textTranslation.text AS text')
+        $articles = $query->select('articles.id', 'articles.image_name', 'titleTranslation.text AS title', 'textTranslation.text AS text')
             ->get();
 
         return response()->json($articles);
@@ -41,7 +44,7 @@ class ArticleController extends Controller
         $query = DB::table('articles');
         $query = $this->translation_service->join($query, 'articles', 'title_translation_id', 'titleTranslation', $language_code);
         $query = $this->translation_service->join($query, 'articles', 'text_translation_id', 'textTranslation', $language_code);
-        $article = $query->select('articles.id', 'titleTranslation.text AS title', 'textTranslation.text AS text')
+        $article = $query->select('articles.id', 'articles.image_name', 'titleTranslation.text AS title', 'textTranslation.text AS text')
             ->find($id);
 
         if ($request->has('include_language_translations')) {
@@ -57,6 +60,7 @@ class ArticleController extends Controller
         $article = new Article; 
         $article->title_translation_id = $this->translation_service->store($request->title_translations, 'article title');
         $article->text_translation_id = $this->translation_service->store($request->text_translations, 'article text');
+        $article->image_name = $request->image_name;
         $article->save();
 
         $response = [
@@ -70,6 +74,7 @@ class ArticleController extends Controller
     public function update (Request $request, $id)
     {
         $article = Article::find($id);
+        $article->image_name = $this->imageNameService->replaceImageName($article->image_name, $request->image_name);
         $article->save();
 
         $this->translation_service->update($request->title_translation_id, $request->title_translations);

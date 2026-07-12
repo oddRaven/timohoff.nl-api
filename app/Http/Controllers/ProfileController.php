@@ -11,7 +11,7 @@ use App\Models\ProfileCollection;
 use App\Models\LanguageTranslation;
 use App\Models\Translation;
 
-use App\Services\IFileService;
+use App\Services\ImageNameService;
 use App\Services\TranslationService;
 
 class ProfileController extends Controller
@@ -19,7 +19,7 @@ class ProfileController extends Controller
     private TranslationService $translation_service;
 
     public function __construct (
-        private IFileService $fileService
+        private ImageNameService $imageNameService
     ) {
         $this->translation_service = new TranslationService;
     }
@@ -105,27 +105,7 @@ class ProfileController extends Controller
     {
         $profile = Profile::find($id);
 
-        $previous_image_name = $profile->image_name;
-
-        if ($previous_image_name === null) {
-            $profile->image_name = $request->image_name;
-        }
-        else {
-            // Extract extension from previous image name
-            $extension = pathinfo($previous_image_name, PATHINFO_EXTENSION);
-
-            // Construct new image name
-            $new_image_name = $request->image_name;
-            if (!pathinfo($new_image_name, PATHINFO_EXTENSION)) {
-                $new_image_name .= '.' . $extension;
-            }
-
-            // Only update if path has changed
-            if ($previous_image_name !== $new_image_name) {
-                $this->fileService->rename($previous_image_name, $new_image_name);
-                $profile->image_name = $new_image_name;
-            }
-        }
+        $profile->image_name = $this->imageNameService->replaceImageName($profile->image_name, $request->image_name);
 
         $profile->save();
 
